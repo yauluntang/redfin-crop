@@ -9,6 +9,10 @@ const client = require('https');
 
 // Spawn Chromium process once
 const browserlessFactory = createBrowserless();
+
+if (!fs.existsSync(`${__dirname}\\output`)) {
+  fs.mkdirSync(`${__dirname}\\output`);
+}
 const OUTPUT_PATH = `${__dirname}\\output\\${new Date().getTime()}`;
 
 // Kill the process when Node.js exit
