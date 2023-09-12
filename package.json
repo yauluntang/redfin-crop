@@ -9,16 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@angablue/exe": "^1.2.0",
     "axios": "^1.2.3",
     "browserless": "^9.8.0",
-    "concat-stream": "^2.0.0",
     "form-data": "^4.0.0",
     "html-get": "^2.9.28",
     "jimp": "^0.16.2",
-    "puppeteer": "^19.5.2",
-    "whatsapp-business-api": "^0.0.4",
-    "whatsapp-cloud-api": "^0.2.6",
-    "whatsapp-web.js": "^1.19.2"
+    "puppeteer": "21.1.1"
   }
 }

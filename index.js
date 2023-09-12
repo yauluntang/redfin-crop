@@ -6,10 +6,6 @@ const getHTML = require('html-get')
 const client = require('https');
 const startTime = new Date().getTime();
 const browserlessFactory = createBrowserless();
-const { createBot } = require('whatsapp-cloud-api');
-const from = '103671399300618';
-const token = 'EAAJ7LwQPrN4BAPyl71hPZCNPnZA8jwntR0oYu8RgwdIWwUZBEFOqZCfanX6uZBTdbACqDthK8D4q7I6yb3vVXwnm0tcGgKP3Ml395aJ5rZCooRKT58wAcZAKyp84jBXqFLPOXk2ZAdKouACyYEHK7O7hlioVbeoaouZBmxgzGoWgLMb3V2li758OUrXN7ACjZCBsMZAvJsiZAaIczgZDZD';
-const to = '16176976082';
 const axios = require('axios');
 const FormData = require('form-data');
 
@@ -193,6 +189,8 @@ async function downloadAllRedfinImages(url) {
       let image = null;
       let i = 1;
       let j = 0;
+      let retry = false;
+      let atLeastOne = false;
       do {
         const imgUrl = imageUrl.replace('{x}', `_${i}_${j}`);
         try {
@@ -206,24 +204,39 @@ async function downloadAllRedfinImages(url) {
           }
           else {
             if (j > 0) {
-              fs.unlinkSync(`${OUTPUT_PATH}\\image_${numI}_${numJLast}.jpg`)
+              let path = `${OUTPUT_PATH}\\image_${numI}_${numJLast}.jpg`;
+              if (fs.existsSync(path)) {
+                fs.unlinkSync(path)
+              }
             }
             j++;
 
           }
+          if ( image ){
+            retry = false;
+            atLeastOne = true;
+          }
         }
         catch (e) {
+          //console.log('Error out', e)
           //end of the images
           image = null;
-          if (j >= 1) {
+          if (j >= 1 && atLeastOne) {
             j = 0;
             i++;
+            atLeastOne = false;
           }
-          else if (j === 0) {
-            j = -1;
+
+          else if ( j <= 10 && !atLeastOne ){
+            retry = true;
+            j++;
           }
+          else if ( j > 10 ){
+            retry = false;
+          }
+  
         }
-      } while (image !== null || j >= 0);
+      } while (image !== null || (j >= 0 && j <= 10) || retry );
     }
   }
   catch (e) {
@@ -269,47 +282,6 @@ async function cropImages(directory) {
   for (let file of targetFiles) {
     await cropSingleImage(file, directory);
   };
-}
-
-function base64_encode(file) {
-  // read binary data
-  var bitmap = fs.readFileSync(file);
-  // convert binary data to base64 encoded string
-  return Buffer.from(bitmap).toString('base64');
-}
-
-async function sendImages(directory) {
-  try {
-    const files = fs.readdirSync(directory);
-    const targetFiles = files.filter(file => {
-      return ['.jpg', '.png', '.bmp', '.gif'].indexOf(path.extname(file).toLowerCase()) !== -1;
-    });
-
-
-    await postText(to, "Hello");
-
-    //listing all files using forEach
-    for (let file of targetFiles) {
-      console.log(`Sending ${file}`);
-      const fullPath = `${directory}\\cropped\\${file}`;
-
-      //const data = await postImage(fullPath, 'image/jpeg');
-
-      //const result = await bot.sendImage(to, data.id);
-
-      /*
-      await wp.sendMediaMessage(
-        to, // Phone number to send message.
-        {
-          local_path: fullPath
-        }
-      )*/
-
-    };
-  }
-  catch (e) {
-    console.error(e);
-  }
 }
 
 async function runAll() {
